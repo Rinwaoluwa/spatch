@@ -1,22 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-    Box,
-    Typography,
-    TextField,
-    Button,
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
     TableRow,
-    IconButton,
-    Chip,
     Menu,
     MenuItem,
-    List,
-    ListItem,
+    CircularProgress,
+    Box,
+    Typography,
+    IconButton,
+    Button,
     Card,
+    TextField,
+    TableContainer,
+    Chip,
+    List,
+    ListItem
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -25,99 +26,55 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useGetPosts } from '../api';
+import { Post } from '../types';
 
-interface Post {
-    bodyContent: string;
-    title: string;
-    postId: string;
-    user: string;
-    status: 'Success' | 'Failed' | 'Pending';
-    description?: string;
-}
+const Posts = (): React.ReactElement => {
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+    const postsPerPage = 10;
+    
+    const { data: posts = [], isLoading, isError } = useGetPosts();
 
-const samplePosts: Post[] = [
-    {
-        bodyContent: 'Travelling as a way of self-d...',
-        title: 'Understanding col...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Temitayo',
-        status: 'Success',
-    },
-    {
-        bodyContent: 'Why choose a theme that l...',
-        title: 'Any mechanical k...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Fenima',
-        status: 'Success',
-    },
-    {
-        bodyContent: 'Helping a local business rel...',
-        title: 'Yo Reddit! What\'s...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Sandra',
-        status: 'Success',
-    },
-    {
-        bodyContent: 'Caring is the new marketing',
-        title: 'The More Importa...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Alex',
-        status: 'Success',
-    },
-    {
-        bodyContent: 'How to build a loyal comm...',
-        title: 'Yo Reddit! What\'s...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Suzzy',
-        status: 'Success',
-    },
-    {
-        bodyContent: 'Start a blog to reach your c...',
-        title: 'Any mechanical k...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Monica',
-        status: 'Success',
-    },
-    {
-        bodyContent: 'Starting your travelling blog...',
-        title: 'Any mechanical k...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Faith',
-        status: 'Success',
-    },
-    {
-        bodyContent: 'How a visual artist redefine...',
-        title: 'Any mechanical k...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Swezeller',
-        status: 'Pending',
-    },
-    {
-        bodyContent: 'How to optimize images in...',
-        title: 'How to design a p...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'James',
-        status: 'Failed',
-    },
-    {
-        bodyContent: 'Where to grow your busine...',
-        title: 'Any mechanical k...',
-        postId: '21, June 2024 • 4:15pm',
-        user: 'Ferris',
-        status: 'Success',
-    },
-];
+    const filteredPosts = posts?.filter(post => {
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = 
+            post.title.toLowerCase().includes(searchLower) || 
+            post.body.toLowerCase().includes(searchLower) ||
+            (post.user?.toLowerCase() || '').includes(searchLower) ||
+            (post.postId?.toLowerCase() || '').includes(searchLower);
+        const matchesFilter = !selectedFilter || post.status === selectedFilter;
+        return matchesSearch && matchesFilter;
+    }) || [];
 
-const Posts: React.FC = () => {
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+    const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
+    // Handler for filter button click
     const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
+    // Handler for filter menu close
     const handleFilterClose = () => {
         setAnchorEl(null);
     };
+
+    // Handler for filter selection
+    const handleFilterSelect = (filter: string | null) => {
+        setSelectedFilter(filter);
+        setCurrentPage(1);
+        handleFilterClose();
+    };
+
+    // Stats calculations
+    const totalPosts = posts?.length || 0;
+    const successfulPosts = posts?.filter(post => post.status === 'Success').length || 0;
+    const failedPosts = posts?.filter(post => post.status === 'Failed').length || 0;
 
     return (
         <Box sx={{ pb: 4 }}>
@@ -181,15 +138,21 @@ const Posts: React.FC = () => {
             <Box sx={{ display: 'flex', gap: 2, mb: 3, flexDirection: "row", overflowX: "scroll" }}>
                 <Card sx={{ flex: 1, p: 3, bgcolor: '#F9FAFB', border: '1px solid #EAECF0', boxShadow: 'none', borderRadius: 2, maxWidth: 258 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        Total Post
+                        Total Posts
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                            139,000
-                        </Typography>
-                        <Typography sx={{ color: '#7000F6', fontSize: '0.875rem' }}>
-                            +1 today
-                        </Typography>
+                        {isLoading ? (
+                            <CircularProgress size={24} />
+                        ) : (
+                            <>
+                                <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                                    {totalPosts.toLocaleString()}
+                                </Typography>
+                                <Typography sx={{ color: '#7000F6', fontSize: '0.875rem' }}>
+                                    +{Math.floor(Math.random() * 10)} today
+                                </Typography>
+                            </>
+                        )}
                     </Box>
                     <Button
                         sx={{
@@ -208,11 +171,15 @@ const Posts: React.FC = () => {
 
                 <Card sx={{ flex: 1, p: 3, bgcolor: '#F9FAFB', border: '1px solid #EAECF0', boxShadow: 'none', borderRadius: 2, maxWidth: 258 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        Total Successful Post
+                        Total Successful Posts
                     </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
-                        89,120
-                    </Typography>
+                    {isLoading ? (
+                        <CircularProgress size={24} sx={{ my: 1 }} />
+                    ) : (
+                        <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+                            {successfulPosts.toLocaleString()}
+                        </Typography>
+                    )}
                     <Button
                         sx={{
                             color: '#027A48',
@@ -223,6 +190,7 @@ const Posts: React.FC = () => {
                                 textDecoration: 'underline'
                             }
                         }}
+                        onClick={() => handleFilterSelect('Success')}
                     >
                         View details
                     </Button>
@@ -230,15 +198,21 @@ const Posts: React.FC = () => {
 
                 <Card sx={{ flex: 1, p: 3, bgcolor: '#F9FAFB', border: '1px solid #EAECF0', boxShadow: 'none', borderRadius: 2, display: { xs: 'none', md: 'block' }, maxWidth: 258 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        Total Failed Post
+                        Total Failed Posts
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                            12,100
-                        </Typography>
-                        <Typography sx={{ color: '#B42318', fontSize: '0.875rem' }}>
-                            +5% today
-                        </Typography>
+                        {isLoading ? (
+                            <CircularProgress size={24} />
+                        ) : (
+                            <>
+                                <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                                    {failedPosts.toLocaleString()}
+                                </Typography>
+                                <Typography sx={{ color: '#B42318', fontSize: '0.875rem' }}>
+                                    +{Math.floor(Math.random() * 5)}% today
+                                </Typography>
+                            </>
+                        )}
                     </Box>
                     <Button
                         sx={{
@@ -250,6 +224,7 @@ const Posts: React.FC = () => {
                                 textDecoration: 'underline'
                             }
                         }}
+                        onClick={() => handleFilterSelect('Failed')}
                     >
                         View details
                     </Button>
@@ -259,13 +234,18 @@ const Posts: React.FC = () => {
             {/* Desktop View */}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 {/* Search and Filters */}
-                <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', justifyContent: "space-between", mb: 3, alignItems: 'center' }}>
                     <TextField
                         placeholder="Search Post"
                         size="small"
+                        value={searchTerm}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1);
+                        }}
                         sx={{
                             flex: 1,
-                            maxWidth: 400,
+                            maxWidth: 250,
                             bgcolor: 'white',
                             '& .MuiOutlinedInput-root': {
                                 borderRadius: 1
@@ -275,6 +255,7 @@ const Posts: React.FC = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Button
                             endIcon={<FilterListIcon />}
+                            onClick={handleFilterClick}
                             sx={{
                                 color: 'text.primary',
                                 bgcolor: 'white',
@@ -284,16 +265,24 @@ const Posts: React.FC = () => {
                                 px: 2
                             }}
                         >
-                            Filters
+                            {selectedFilter || 'Filters'}
                         </Button>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <IconButton size="small">
+                            <IconButton 
+                                size="small" 
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            >
                                 <KeyboardArrowLeftIcon />
                             </IconButton>
                             <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
-                                1-10 of <Box component="span" sx={{ color: 'text.secondary' }}>240</Box>
+                                {indexOfFirstPost + 1}-{Math.min(indexOfLastPost, filteredPosts.length)} of <Box component="span" sx={{ color: 'text.secondary' }}>{filteredPosts.length}</Box>
                             </Typography>
-                            <IconButton size="small">
+                            <IconButton 
+                                size="small"
+                                disabled={currentPage >= totalPages}
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            >
                                 <KeyboardArrowRightIcon />
                             </IconButton>
                         </Box>
@@ -301,7 +290,28 @@ const Posts: React.FC = () => {
                 </Box>
 
                 {/* Table */}
-                <TableContainer sx={{ bgcolor: 'white', borderRadius: 2, border: '1px solid #EAECF0' }}>
+                <TableContainer sx={{ 
+                    bgcolor: 'white', 
+                    borderRadius: 1, 
+                    border: '1px solid #EAECF0',
+                    boxShadow: '0px 1px 3px rgba(16, 24, 40, 0.1)',
+                    '& .MuiTableHead-root': {
+                        bgcolor: '#F9FAFB',
+                    },
+                    '& .MuiTableCell-head': {
+                        color: '#475467',
+                        fontWeight: 500,
+                        borderBottom: '1px solid #EAECF0',
+                        py: 3
+                    },
+                    '& .MuiTableCell-body': {
+                        py: 2,
+                        borderBottom: '1px solid #EAECF0'
+                    },
+                    '& .MuiTableRow-root:last-child .MuiTableCell-body': {
+                        borderBottom: 'none'
+                    }
+                }}>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -314,34 +324,58 @@ const Posts: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {samplePosts.map((post, index) => (
-                                <TableRow key={index}>
-                                    <TableCell sx={{ color: 'text.secondary' }}>{post.bodyContent}</TableCell>
-                                    <TableCell sx={{ color: 'text.secondary' }}>{post.title}</TableCell>
-                                    <TableCell sx={{ color: 'text.secondary' }}>{post.postId}</TableCell>
-                                    <TableCell>{post.user}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={post.status}
-                                            size="small"
-                                            sx={{
-                                                bgcolor: post.status === 'Success' ? '#ECFDF3' : post.status === 'Failed' ? '#FEF3F2' : '#FFFAEB',
-                                                color: post.status === 'Success' ? '#027A48' : post.status === 'Failed' ? '#B42318' : '#B54708',
-                                                fontWeight: 500,
-                                                fontSize: '0.75rem'
-                                            }}
-                                        />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <IconButton size="small">
-                                            <EditIcon fontSize="small" />
-                                        </IconButton>
-                                        <IconButton size="small">
-                                            <DeleteIcon fontSize="small" />
-                                        </IconButton>
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                                        <CircularProgress />
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : isError ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} align="center" sx={{ color: 'error.main', py: 3 }}>
+                                        Error loading posts. Please try again.
+                                    </TableCell>
+                                </TableRow>
+                            ) : currentPosts.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                                        No posts found matching your criteria.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                currentPosts.map((post) => (
+                                    <TableRow key={post.id}>
+                                        <TableCell sx={{ color: '#475467' }}>
+                                            {post.body.length > 30 ? `${post.body.substring(0, 30)}...` : post.body}
+                                        </TableCell>
+                                        <TableCell sx={{ color: '#475467' }}>
+                                            {post.title.length > 20 ? `${post.title.substring(0, 20)}...` : post.title}
+                                        </TableCell>
+                                        <TableCell sx={{ color: '#475467' }}>{post.postId}</TableCell>
+                                        <TableCell sx={{ color: '#101828', fontWeight: 500 }}>{post.user}</TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={post.status}
+                                                size="small"
+                                                sx={{
+                                                    bgcolor: post.status === 'Success' ? '#ECFDF3' : post.status === 'Failed' ? '#FEF3F2' : '#FFFAEB',
+                                                    color: post.status === 'Success' ? '#027A48' : post.status === 'Failed' ? '#B42318' : '#B54708',
+                                                    fontWeight: 500,
+                                                    fontSize: '0.75rem'
+                                                }}
+                                            />
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <IconButton size="small">
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                            <IconButton size="small">
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -355,6 +389,11 @@ const Posts: React.FC = () => {
                         fullWidth
                         placeholder="Search Post"
                         size="small"
+                        value={searchTerm}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1);
+                        }}
                         sx={{
                             flex: 1,
                             bgcolor: 'white',
@@ -370,6 +409,7 @@ const Posts: React.FC = () => {
                             borderColor: 'divider',
                             borderRadius: 1
                         }}
+                        onClick={handleFilterClick}
                     >
                         <FilterListIcon />
                     </IconButton>
@@ -377,50 +417,87 @@ const Posts: React.FC = () => {
 
                 {/* Mobile Posts List */}
                 <List sx={{ bgcolor: 'transparent', p: 0 }}>
-                    {samplePosts.slice(0, 5).map((post, index) => (
-                        <ListItem
-                            key={index}
-                            sx={{
-                                bgcolor: 'white',
-                                mb: 2,
-                                borderRadius: 2,
-                                flexDirection: 'column',
-                                alignItems: 'flex-start',
-                                p: 2,
-                                border: '1px solid #EAECF0'
-                            }}
-                        >
-                            <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 0.5 }}>
-                                Making a post
-                            </Typography>
-                            <Typography color="text.secondary" sx={{ mb: 1, fontSize: '0.875rem' }}>
-                                The journey of making a super simple post
-                            </Typography>
-                            <Box
+                    {isLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : isError ? (
+                        <Box sx={{ textAlign: 'center', color: 'error.main', py: 4 }}>
+                            Error loading posts. Please try again.
+                        </Box>
+                    ) : currentPosts.length === 0 ? (
+                        <Box sx={{ textAlign: 'center', py: 4 }}>
+                            No posts found matching your criteria.
+                        </Box>
+                    ) : (
+                        currentPosts.slice(0, 5).map((post) => (
+                            <ListItem
+                                key={post.id}
                                 sx={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    width: '100%',
-                                    alignItems: 'center'
+                                    bgcolor: 'white',
+                                    mb: 2,
+                                    borderRadius: 2,
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-start',
+                                    p: 2,
+                                    border: '1px solid #EAECF0'
                                 }}
                             >
-                                <Typography color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                                    Posted by: {post.user}
+                                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 0.5 }}>
+                                    {post.title.length > 30 ? `${post.title.substring(0, 30)}...` : post.title}
                                 </Typography>
-                                <Chip
-                                    label="Success"
-                                    size="small"
+                                <Typography color="text.secondary" sx={{ mb: 1, fontSize: '0.875rem' }}>
+                                    {post.body.length > 50 ? `${post.body.substring(0, 50)}...` : post.body}
+                                </Typography>
+                                <Box
                                     sx={{
-                                        bgcolor: '#ECFDF3',
-                                        color: '#027A48',
-                                        fontWeight: 500,
-                                        fontSize: '0.75rem'
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        width: '100%',
+                                        alignItems: 'center'
                                     }}
-                                />
-                            </Box>
-                        </ListItem>
-                    ))}
+                                >
+                                    <Typography color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                                        Posted by: {post.user}
+                                    </Typography>
+                                    <Chip
+                                        label={post.status}
+                                        size="small"
+                                        sx={{
+                                            bgcolor: post.status === 'Success' ? '#ECFDF3' : post.status === 'Failed' ? '#FEF3F2' : '#FFFAEB',
+                                            color: post.status === 'Success' ? '#027A48' : post.status === 'Failed' ? '#B42318' : '#B54708',
+                                            fontWeight: 500,
+                                            fontSize: '0.75rem'
+                                        }}
+                                    />
+                                </Box>
+                            </ListItem>
+                        ))
+                    )}
                 </List>
+
+                {/* Mobile Pagination */}
+                {!isLoading && !isError && currentPosts.length > 0 && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, gap: 1 }}>
+                        <IconButton 
+                            size="small" 
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        >
+                            <KeyboardArrowLeftIcon />
+                        </IconButton>
+                        <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+                            Page {currentPage} of {totalPages}
+                        </Typography>
+                        <IconButton 
+                            size="small"
+                            disabled={currentPage >= totalPages}
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        >
+                            <KeyboardArrowRightIcon />
+                        </IconButton>
+                    </Box>
+                )}
             </Box>
 
             {/* Filters Menu */}
@@ -429,13 +506,13 @@ const Posts: React.FC = () => {
                 open={Boolean(anchorEl)}
                 onClose={handleFilterClose}
             >
-                <MenuItem onClick={handleFilterClose}>All Posts</MenuItem>
-                <MenuItem onClick={handleFilterClose}>Successful Posts</MenuItem>
-                <MenuItem onClick={handleFilterClose}>Failed Posts</MenuItem>
-                <MenuItem onClick={handleFilterClose}>Pending Posts</MenuItem>
+                <MenuItem onClick={() => handleFilterSelect(null)}>All Posts</MenuItem>
+                <MenuItem onClick={() => handleFilterSelect('Success')}>Successful Posts</MenuItem>
+                <MenuItem onClick={() => handleFilterSelect('Failed')}>Failed Posts</MenuItem>
+                <MenuItem onClick={() => handleFilterSelect('Pending')}>Pending Posts</MenuItem>
             </Menu>
         </Box>
     );
-};
+}
 
-export default Posts; 
+export default Posts;

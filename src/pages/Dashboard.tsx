@@ -1,75 +1,55 @@
 import React from 'react';
-import { Box, Typography, Paper } from '@mui/material';
+import {
+  PageContainer,
+  PageTitle,
+  StatsGrid,
+  StatCard,
+  StatCardWrapper,
+  StatLabel,
+  StatValue
+} from './styles/Dashboard.styles';
 
 const Dashboard: React.FC = () => {
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
+    <PageContainer>
+      <PageTitle variant="h4">
         Dashboard
-      </Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)', lg: '1 1 calc(25% - 18px)' } }}>
-          <Paper
-            sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 140,
-            }}
-          >
-            <Typography color="text.secondary" gutterBottom>
+      </PageTitle>
+      <StatsGrid>
+        <StatCardWrapper>
+          <StatCard>
+            <StatLabel>
               Total Posts
-            </Typography>
-            <Typography variant="h4">150</Typography>
-          </Paper>
-        </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)', lg: '1 1 calc(25% - 18px)' } }}>
-          <Paper
-            sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 140,
-            }}
-          >
-            <Typography color="text.secondary" gutterBottom>
+            </StatLabel>
+            <StatValue variant="h4">150</StatValue>
+          </StatCard>
+        </StatCardWrapper>
+        <StatCardWrapper>
+          <StatCard>
+            <StatLabel>
               Active Users
-            </Typography>
-            <Typography variant="h4">1,250</Typography>
-          </Paper>
-        </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)', lg: '1 1 calc(25% - 18px)' } }}>
-          <Paper
-            sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 140,
-            }}
-          >
-            <Typography color="text.secondary" gutterBottom>
+            </StatLabel>
+            <StatValue variant="h4">1,250</StatValue>
+          </StatCard>
+        </StatCardWrapper>
+        <StatCardWrapper>
+          <StatCard>
+            <StatLabel>
               Comments
-            </Typography>
-            <Typography variant="h4">3,427</Typography>
-          </Paper>
-        </Box>
-        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 16px)', lg: '1 1 calc(25% - 18px)' } }}>
-          <Paper
-            sx={{
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column',
-              height: 140,
-            }}
-          >
-            <Typography color="text.secondary" gutterBottom>
+            </StatLabel>
+            <StatValue variant="h4">3,427</StatValue>
+          </StatCard>
+        </StatCardWrapper>
+        <StatCardWrapper>
+          <StatCard>
+            <StatLabel>
               Engagement Rate
-            </Typography>
-            <Typography variant="h4">67%</Typography>
-          </Paper>
-        </Box>
-      </Box>
-    </Box>
+            </StatLabel>
+            <StatValue variant="h4">67%</StatValue>
+          </StatCard>
+        </StatCardWrapper>
+      </StatsGrid>
+    </PageContainer>
   );
 };
 

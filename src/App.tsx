@@ -1,14 +1,22 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
+import { ThemeProvider } from './styles/ThemeProvider';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Posts from './pages/Posts';
 import Settings from './pages/Settings';
 import SignIn from './pages/SignIn';
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
 
-const theme = createTheme({
+const queryClient = new QueryClient()
+
+
+// Theme is now managed in styles/ThemeProvider.tsx
+/*const theme = createTheme({
   palette: {
     primary: {
       main: '#8B3DFF',
@@ -87,25 +95,27 @@ const theme = createTheme({
       },
     },
   },
-});
+});*/
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="posts" element={<Posts />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <CssBaseline />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="posts" element={<Posts />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

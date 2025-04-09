@@ -1,18 +1,17 @@
 import React from 'react';
-import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemButton,
-  Box,
-  Typography,
-} from '@mui/material';
+import { List, ListItem, ListItemText } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ArticleIcon from '@mui/icons-material/Article';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  NavContainer,
+  NavListButton,
+  NavListIcon,
+  LogoutWrapper,
+  LogoutListButton
+} from './styles/NavigationMenu.styles';
 
 const menuItems = [
   {
@@ -37,65 +36,36 @@ const NavigationMenu: React.FC = () => {
   const location = useLocation();
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <NavContainer>
       <List>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
+            <NavListButton
               onClick={() => navigate(item.path)}
-              sx={{
-                borderRadius: '8px',
-                mx: 1,
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                  },
-                  '& .MuiListItemIcon-root': {
-                    color: 'white',
-                  },
-                },
-              }}
+              $isActive={location.pathname === item.path}
             >
-              <ListItemIcon
-                sx={{
-                  minWidth: 40,
-                  color: location.pathname === item.path ? 'white' : 'inherit',
-                }}
-              >
+              <NavListIcon>
                 {item.icon}
-              </ListItemIcon>
+              </NavListIcon>
               <ListItemText primary={item.text} />
-            </ListItemButton>
+            </NavListButton>
           </ListItem>
         ))}
       </List>
 
-      <Box sx={{ position: 'absolute', bottom: 0, width: '100%', pb: 2 }}>
+      <LogoutWrapper>
         <List>
           <ListItem disablePadding>
-            <ListItemButton
-              sx={{
-                borderRadius: '8px',
-                mx: 1,
-                color: 'error.main',
-                '&:hover': {
-                  backgroundColor: 'error.light',
-                  color: 'error.main',
-                },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+            <LogoutListButton>
+              <NavListIcon>
                 <LogoutIcon />
-              </ListItemIcon>
+              </NavListIcon>
               <ListItemText primary="Logout" />
-            </ListItemButton>
+            </LogoutListButton>
           </ListItem>
         </List>
-      </Box>
-    </Box>
+      </LogoutWrapper>
+    </NavContainer>
   );
 };
 

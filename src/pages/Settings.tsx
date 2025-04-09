@@ -1,93 +1,197 @@
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  TextField,
-  Switch,
-  FormControlLabel,
-  Button,
-} from '@mui/material';
+import { Switch } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import {
+  SettingsContainer,
+  SettingsTitle,
+  SettingsCard,
+  SettingsSection,
+  SectionTitle,
+  FormRow,
+  FormField,
+  StyledTextField,
+  SwitchContainer,
+  StyledFormControlLabel,
+  ButtonContainer,
+  SaveButton,
+  LogoutButton,
+} from './styles/Settings.styles';
+import { settingsValidationSchema, SettingsFormData } from './validation/settings.validation';
 
 const Settings: React.FC = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  
+  const { control, handleSubmit, formState: { errors } } = useForm<SettingsFormData>({
+    resolver: yupResolver(settingsValidationSchema),
+    defaultValues: {
+      displayName: 'John Doe',
+      email: 'john.doe@example.com',
+      emailNotifications: true,
+      pushNotifications: true,
+      makeProfilePublic: false,
+      showEmailAddress: true,
+    },
+  });
+
+  const onSubmit = (data: SettingsFormData) => {
+    console.log('Form submitted:', data);
+    // Here you would typically make an API call to save the settings
+  };
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
+    <SettingsContainer>
+      <SettingsTitle variant="h4">
         Settings
-      </Typography>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Profile Settings
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <TextField
-                fullWidth
-                label="Display Name"
-                defaultValue="John Doe"
+      </SettingsTitle>
+      
+      <SettingsCard>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <SettingsSection>
+            <div>
+              <SectionTitle variant="h6">
+                Profile Settings
+              </SectionTitle>
+              
+              <FormRow>
+                <FormField>
+                  <Controller
+                    name="displayName"
+                    control={control}
+                    render={({ field }) => (
+                      <StyledTextField
+                        {...field}
+                        label="Display Name"
+                        variant="outlined"
+                        error={!!errors.displayName}
+                        helperText={errors.displayName?.message}
+                      />
+                    )}
+                  />
+                </FormField>
+                <FormField>
+                  <Controller
+                    name="email"
+                    control={control}
+                    render={({ field }) => (
+                      <StyledTextField
+                        {...field}
+                        label="Email"
+                        variant="outlined"
+                        error={!!errors.email}
+                        helperText={errors.email?.message}
+                      />
+                    )}
+                  />
+                </FormField>
+              </FormRow>
+            </div>
+
+            <div>
+              <SectionTitle variant="h6">
+                Notification Settings
+              </SectionTitle>
+              
+              <SwitchContainer>
+                <Controller
+                  name="emailNotifications"
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <StyledFormControlLabel
+                      control={
+                        <Switch
+                          {...field}
+                          checked={value}
+                          onChange={(e) => onChange(e.target.checked)}
+                        />
+                      }
+                      label="Email Notifications"
+                    />
+                  )}
+                />
+              </SwitchContainer>
+              
+              <SwitchContainer>
+                <Controller
+                  name="pushNotifications"
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <StyledFormControlLabel
+                      control={
+                        <Switch
+                          {...field}
+                          checked={value}
+                          onChange={(e) => onChange(e.target.checked)}
+                        />
+                      }
+                      label="Push Notifications"
+                    />
+                  )}
+                />
+              </SwitchContainer>
+            </div>
+
+            <div>
+              <SectionTitle variant="h6">
+                Privacy Settings
+              </SectionTitle>
+              
+              <SwitchContainer>
+                <Controller
+                  name="makeProfilePublic"
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <StyledFormControlLabel
+                      control={
+                        <Switch
+                          {...field}
+                          checked={value}
+                          onChange={(e) => onChange(e.target.checked)}
+                        />
+                      }
+                      label="Make Profile Public"
+                    />
+                  )}
+                />
+              </SwitchContainer>
+              
+              <SwitchContainer>
+                <Controller
+                  name="showEmailAddress"
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <StyledFormControlLabel
+                      control={
+                        <Switch
+                          {...field}
+                          checked={value}
+                          onChange={(e) => onChange(e.target.checked)}
+                        />
+                      }
+                      label="Show Email Address"
+                    />
+                  )}
+                />
+              </SwitchContainer>
+            </div>
+
+            <ButtonContainer>
+              <SaveButton type="submit" variant="contained">
+                Save Changes
+              </SaveButton>
+              <LogoutButton
+                type="button"
                 variant="outlined"
-              />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <TextField
-                fullWidth
-                label="Email"
-                defaultValue="john.doe@example.com"
-                variant="outlined"
-              />
-            </Box>
-          </Box>
-          <Box>
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              Notification Settings
-            </Typography>
-          </Box>
-          <Box>
-            <FormControlLabel
-              control={<Switch defaultChecked />}
-              label="Email Notifications"
-            />
-          </Box>
-          <Box>
-            <FormControlLabel
-              control={<Switch defaultChecked />}
-              label="Push Notifications"
-            />
-          </Box>
-          <Box>
-            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-              Privacy Settings
-            </Typography>
-          </Box>
-          <Box>
-            <FormControlLabel
-              control={<Switch />}
-              label="Make Profile Public"
-            />
-          </Box>
-          <Box>
-            <FormControlLabel
-              control={<Switch defaultChecked />}
-              label="Show Email Address"
-            />
-          </Box>
-          <Box sx={{ mt: 3 }}>
-            <Button variant="contained" color="primary">
-              Save Changes
-            </Button>
-            <Button variant="outlined" sx={{ ml: 2 }} onClick={() => navigate("/SignIn")}>
-              Logout
-            </Button>
-          </Box>
-        </Box>
-      </Paper>
-    </Box>
+                onClick={() => navigate("/SignIn")}
+              >
+                Logout
+              </LogoutButton>
+            </ButtonContainer>
+          </SettingsSection>
+        </form>
+      </SettingsCard>
+    </SettingsContainer>
   );
 };
 
